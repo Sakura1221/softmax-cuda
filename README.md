@@ -9,10 +9,10 @@ How to use
 ----------
 
 ```console
-$ git clone https://github.com/alpha0422/label-smoothing-cuda.git
+$ git clone https://github.com/Sakura1221/softmax-cuda.git
 $ cd label-smoothing-cuda
 $ python setup.py install
-$ python test/test.py
+$ python tests/test_label_smoothing.py
 ```
 
 Performance

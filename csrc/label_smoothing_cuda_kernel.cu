@@ -6,9 +6,8 @@
 #include <ATen/AccumulateType.h>
 #include <ATen/cuda/NumericLimits.cuh>
 
-#include <THC/THC.h>
-#include <THC/THCGeneral.h>
-#include <THC/THCThrustAllocator.cuh>
+#include <THC/THCAtomics.cuh>
+#include <THC/THCDeviceUtils.cuh>
 
 using Tensor = at::Tensor;
 using TensorList = at::TensorList;
@@ -444,7 +443,7 @@ std::vector<Tensor> host_softmax_xentropy(
     inner_size *= input.size(i);
   // This kernel spawns a block per each element in the batch.
   // XXX: it assumes that inner_size == 1
-  AT_CHECK(inner_size == 1, "Currently only inner size 1 supported");
+  TORCH_CHECK(inner_size == 1, "Currently only inner size 1 supported");
 
   const int ILP = 2;
   dim3 grid(outer_size);
@@ -469,7 +468,7 @@ std::vector<Tensor> host_softmax_xentropy(
   }
   });
 
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
 
   std::vector<at::Tensor> ret = {losses, max_log_sum_exp};
   return ret;
@@ -510,7 +509,7 @@ Tensor host_softmax_xentropy_backward(
     inner_size *= logits.size(i);
   // See descriptions of kernels above.
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-  AT_CHECK(inner_size == 1, "Currently only inner size 1 supported");
+  TORCH_CHECK(inner_size == 1, "Currently only inner size 1 supported");
 
   const int ILP = 2;
   dim3 grid(outer_size);
@@ -536,7 +535,7 @@ Tensor host_softmax_xentropy_backward(
   }
   });
 
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return gI;
 }
 
